@@ -1,18 +1,20 @@
 April 3, 2026 — Weekly Check-in
-- KadaKareer TL interview completed
-- ISACA SheLeadsTech application started, 
-  deadline May 5
-- GSoC proposal submitted, results May 2026
-- GitHub Campus Experts opens July 2026
-- Globe internship — apply January 2027
 
-New tasks:
-- Apply MLSA (owner: J, due: this week)
-- Post Instagram carousel (due: today)
-- Start Cisco Intro to Cybersecurity 
-  (due: April 20)
-- Request HAU transcript (due: this week)
+Today's urgent tasks:
+- Jaymee will post Instagram carousel today - urgent deadline
+- Jaymee needs to apply MLSA this week - high priority
+- Request HAU transcript this week - urgent
+
+In Progress:
+- ISACA SheLeadsTech application deadline May 5 2026 - high priority
+- Forage ANZ application due this week
+
+Upcoming:
+- Start Cisco Intro to Cybersecurity by April 20
+- Samsung Galaxy Campus B4 due May 2026
+- GitHub Campus Experts opens July 2026
+- Globe Summer Internship apply January 2027
 
 Blocked:
-- DICT, DOST, BSP internships — waiting 
-  for HAU endorsement letter
+- DICT internship waiting for HAU endorsement letter
+- DOST internship waiting for HAU endorsement letter

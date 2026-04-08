@@ -98,34 +98,50 @@ def save_task(task, source):
     table_client.upsert_entity(entity)
     print(f"  ✅ Saved: {task['task']}")
 
+def load_from_csv():
+    """Load tasks directly from CSV file"""
+    print("📊 Loading tasks from CSV...")
+    
+    with open("data/task_tracker_baseline.csv", "r") as f:
+        reader = csv.DictReader(f)
+        count = 0
+        for row in reader:
+            entity = {
+                "PartitionKey": "tasks",
+                "RowKey": row["Task"].replace(" ", "_")[:50],
+                "Task": row["Task"],
+                "Owner": "Jaymee",
+                "DueDate": row["Due Date"],
+                "Status": row["Status"],
+                "Category": row["Category"],
+                "Priority": row["Priority"],
+                "Source": "task_tracker_baseline.csv",
+                "ExtractedAt": datetime.utcnow().isoformat()
+            }
+            table_client.upsert_entity(entity)
+            print(f"  ✅ Saved: {row['Task']}")
+            count += 1
+    
+    print(f"\n✅ Loaded {count} tasks from CSV!")
+    return count
+
 def run():
     print("🤖 AmbitionOS Extraction Agent Starting...\n")
     
-    # Read meeting notes
-    with open("data/meeting_notes.txt", "r") as f:
+    # Step 1 — Load structured data from CSV
+    load_from_csv()
+    
+    # Step 2 — Extract additional tasks from meeting notes
+    print("\n📄 Reading meeting_notes.txt...")
+    with open("data/meeting_notes.txt", "r", encoding="utf-8") as f:
         text = f.read()
     
-    if not text.strip():
-        print("⚠️ meeting_notes.txt is empty! Adding sample data...")
-        text = """
-        April 3, 2026 Weekly Check-in.
-        Jaymee needs to apply MLSA this week.
-        Complete ISACA SheLeadsTech application by May 5.
-        Post Instagram carousel today.
-        Start Cisco Intro to Cybersecurity by April 20.
-        Request HAU transcript this week.
-        Submit Forage ANZ application this week.
-        """
-        with open("data/meeting_notes.txt", "w") as f:
-            f.write(text)
-    
     tasks = extract_from_text(text)
-    print(f"\n📋 Found {len(tasks)} tasks\n")
-    
+    print(f"\n📋 Found {len(tasks)} additional tasks from notes\n")
     for task in tasks:
         save_task(task, "meeting_notes.txt")
     
-    print(f"\n✅ Extraction complete! {len(tasks)} tasks saved to Azure Table Storage!")
+    print("\n🎉 All done!")
 
 if __name__ == "__main__":
     run()

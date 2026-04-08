@@ -3,13 +3,6 @@
 
 An agentic AI personal dashboard and project planner built with Microsoft Azure services.
 
----
-
-## 📌 Submissions
-| # | Project | Problem Statement | Prize |
-|---|---|---|---|
-| 1 | **AmbitionOS Planner** | PS#2 — SJ Project Planner | Internship at SJ |
-| 2 | **AmbitionOS** | PS#3 — Personal Assistant | $50–$100 cash |
 
 📊 **Live Power BI Dashboard:** [View Dashboard](https://app.powerbi.com/groups/me/reports/d36551b2-29f7-42fb-9c8e-bead676b10a2/b91788b4030f6e70bb6b?experience=power-bi)
 

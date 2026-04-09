@@ -5,6 +5,7 @@ from azure.ai.textanalytics import TextAnalyticsClient
 from azure.core.credentials import AzureKeyCredential
 from azure.data.tables import TableServiceClient
 from datetime import datetime
+from agents.search_agent import index_single_task
 
 load_dotenv()
 
@@ -97,6 +98,14 @@ def save_task(task, source):
     }
     table_client.upsert_entity(entity)
     print(f"  ✅ Saved: {task['task']}")
+    
+    # Push to Search Index
+    task_with_source = task.copy()
+    task_with_source["source"] = source
+    try:
+        index_single_task(task_with_source)
+    except Exception as e:
+        print(f"  ⚠️ Error indexing task in search: {e}")
 
 def load_from_csv():
     """Load tasks directly from CSV file"""

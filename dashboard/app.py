@@ -1,7 +1,12 @@
-from flask import Flask, render_template, jsonify, request
 import os
+import sys
 import psycopg2
+from flask import Flask, render_template, jsonify, request
 from dotenv import load_dotenv
+
+# Ensure the root directory is in the path for 'agents' import
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
 
@@ -91,16 +96,26 @@ def search():
         tasks = []
         for result in results:
             tasks.append({
-                "task": result.get("Task", ""),
-                "owner": result.get("Owner", ""),
-                "due_date": result.get("DueDate", ""),
-                "status": result.get("Status", ""),
-                "category": result.get("Category", ""),
-                "priority": result.get("Priority", "")
+                "task": result.get("task", ""),
+                "owner": result.get("owner", "Jaymee"),
+                "due_date": result.get("due_date", "TBD"),
+                "status": result.get("status", "Not Started"),
+                "category": result.get("category", "Admin"),
+                "priority": result.get("priority", "Low")
             })
         return jsonify(tasks)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route("/sync", methods=["POST"])
+def sync_data():
+    """Trigger the change detection agent"""
+    try:
+        from agents.change_detection_agent import run_change_detection
+        run_change_detection()
+        return jsonify({"status": "success", "message": "Synchronization complete!"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 if __name__ == "__main__":
     app.run(debug=True)

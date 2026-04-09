@@ -72,11 +72,14 @@ cwb-ambitionos/
 │   └── powerbi_export.csv        # Exported tasks for Power BI
 │
 ├── agents/
-│   └── extraction_agent.py       # Extracts tasks → Azure Table Storage
+│   ├── extraction_agent.py       # Extracts tasks → Azure Table Storage
+│   ├── search_agent.py           # Azure AI Search index management
+│   └── change_detection_agent.py # Robust sync, mapping, and Claude AI summaries
 │
 ├── database/
 │   ├── db_setup.py               # Creates PostgreSQL tables
-│   └── sync_tasks.py             # Syncs Table Storage → PostgreSQL
+│   ├── sync_tasks.py             # Syncs Table Storage → PostgreSQL
+│   └── fix_db_constraints.py     # Ensures constraints for ON CONFLICT logic
 │
 ├── dashboard/
 │   ├── app.py                    # Flask web app
@@ -112,7 +115,7 @@ source .venv/bin/activate  # Mac/Linux
 
 ### 3. Install Dependencies
 ```bash
-pip install flask azure-data-tables azure-storage-blob azure-ai-textanalytics psycopg2-binary sqlalchemy python-dotenv requests
+pip install flask azure-data-tables azure-storage-blob azure-ai-search-documents azure-ai-textanalytics psycopg2-binary sqlalchemy python-dotenv requests anthropic
 ```
 
 ### 4. Configure Environment Variables
@@ -179,11 +182,14 @@ Open 👉 http://127.0.0.1:5000
 - Extracts additional tasks from `meeting_notes.txt` using Azure AI Language
 - Saves all tasks to Azure Table Storage and syncs to PostgreSQL
 
-### Change Detection Agent
-- Compares old vs new task data
+### Change Detection Agent (`agents/change_detection_agent.py`)
+- Compares tasks across 3 sources (Table Storage > CSV > PG)
+- Implements robust normalization and field mapping
 - Detects: new tasks, updated deadlines, status changes, priority changes
 - Logs every change to PostgreSQL `change_logs` table
+- Generates smart change summaries using **Claude 3.5 Sonnet**
 - Triggers Power Automate approval flow on detected changes
+- Syncs updates to Azure AI Search automatically
 
 ---
 
@@ -202,7 +208,7 @@ Send approval email          Send rejection email
 ---
 
 ## 📊 Dashboard Features
-- **Dashboard tab** — Today's priorities, stats, change log, search bar
+- **Dashboard tab** — Today's priorities, stats, change log, search bar, and **One-Click Sync**
 - **Opportunities tab** — Internships, Scholarships, Ambassador programs
 - **School tab** — Certifications, deadlines
 - **Grow tab** — GitHub streak, skills, learning

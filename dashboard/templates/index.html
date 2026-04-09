@@ -261,6 +261,12 @@
     <!-- SIDEBAR NAVIGATION -->
     <div class="sidebar">
         <div class="logo">🚀 AmbitionOS</div>
+        <div style="padding: 0 30px 20px;">
+            <button id="syncBtn" class="tab-btn" style="background: var(--accent-1); color: var(--bg-color); border-radius: 8px; text-align: center; padding: 10px;" onclick="syncData()">
+                🔄 Sync Data
+            </button>
+            <div id="syncStatus" style="font-size: 11px; margin-top: 8px; text-align: center; display: none;"></div>
+        </div>
         <ul class="tabs">
             <li><button class="tab-btn active" onclick="switchTab('dashboard')">🏠 Dashboard</button></li>
             <li><button class="tab-btn" onclick="switchTab('opportunities')">💼 Opportunities</button></li>
@@ -430,7 +436,42 @@
             event.target.classList.add('active');
         }
 
-        // 2. Fetch Change Logs
+        // 2. Trigger Sync
+        async function syncData() {
+            const btn = document.getElementById('syncBtn');
+            const status = document.getElementById('syncStatus');
+            
+            btn.disabled = true;
+            btn.innerText = '⏳ Syncing...';
+            status.style.display = 'block';
+            status.innerText = 'Connecting to Azure & Claude...';
+            status.style.color = 'var(--accent-1)';
+
+            try {
+                const res = await fetch('/sync', { method: 'POST' });
+                const data = await res.json();
+                
+                if (data.status === 'success') {
+                    status.innerText = '✅ Sync Complete!';
+                    status.style.color = 'var(--low-priority)';
+                    // Reload data
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    status.innerText = '⚠️ Sync Failed: ' + data.message;
+                    status.style.color = 'var(--high-priority)';
+                }
+            } catch (err) {
+                status.innerText = '❌ Error: ' + err.message;
+                status.style.color = 'var(--high-priority)';
+            } finally {
+                btn.disabled = false;
+                btn.innerText = '🔄 Sync Data';
+            }
+        }
+
+        // 3. Fetch Change Logs
         async function fetchChanges() {
             try {
                 const res = await fetch('/changes');

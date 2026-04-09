@@ -524,7 +524,7 @@
                         const data = await res.json();
                         if (data.length > 0) {
                             searchResults.innerHTML = data.map(d => `
-                                <div class="search-item">
+                                <div class="search-item" onmousedown="selectTask('${d.task}', event)">
                                     <strong>${d.task}</strong><br>
                                     <span style="font-size:12px;opacity:0.7">${d.category} | ${d.status}</span>
                                 </div>
@@ -534,7 +534,7 @@
                         }
                         searchResults.style.display = 'block';
                     } else {
-                        searchResults.innerHTML = '<div class="search-item" style="color:#ff4757;">⚠️ Azure AI Search is not fully set up or index is missing.</div>';
+                        searchResults.innerHTML = '<div class="search-item" style="color:#ff4757;">⚠️ Azure AI Search issue. Check indexing.</div>';
                         searchResults.style.display = 'block';
                     }
                 } catch(err) {
@@ -542,6 +542,12 @@
                 }
             }, 500); // 500ms debounce
         });
+
+        function selectTask(name, e) {
+            e.preventDefault(); // Prevents blur from closing dropdown before selection
+            searchInput.value = name;
+            searchResults.style.display = 'none';
+        }
 
         // Close search results if clicked outside
         document.addEventListener('click', (e) => {

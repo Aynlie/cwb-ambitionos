@@ -104,9 +104,18 @@ def log_change(cur, task_name, field_changed, old_value, new_value):
 
 def sync_to_search(task: dict):
     """Sync a single updated task to Azure AI Search"""
+    import base64
+    task_name = task["task"]
+    owner = task.get("owner", "Jaymee")
+    
+    # Unified ID generation: base64(task_name_owner) 
+    # Must match search_agent.py to prevent duplicates
+    combined = f"{task_name}_{owner}".strip().lower()
+    doc_id = base64.urlsafe_b64encode(combined.encode('utf-8')).decode('utf-8').rstrip('=')
+
     doc = {
-        "id": task["task"].replace(" ", "_")[:50],
-        "task": task["task"],
+        "id": doc_id,
+        "task": task_name,
         "owner": task.get("owner", "Jaymee"),
         "due_date": task.get("due_date", "TBD"),
         "status": task.get("status", "Not Started"),

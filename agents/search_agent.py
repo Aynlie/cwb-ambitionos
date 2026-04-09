@@ -36,22 +36,29 @@ table_client = table_service.get_table_client("ambitionosdata")
 # ─────────────────────────────────────────
 # STEP 0 — Utility: Safe ID Generation
 # ─────────────────────────────────────────
-def generate_safe_id(text: str) -> str:
+def generate_safe_id(task_name: str, owner: str = "Jaymee") -> str:
     """
     Generate a valid Azure Search document ID.
-    Azure Search IDs must be alphanumeric, underscores, or dashes. 
-    Using URL-safe Base64 encoding is the most robust way to handle arbitrary text.
+    Must be alphanumeric, underscores, or dashes. 
+    Unified with change_detection_agent.py: base64(task_name_owner)
     """
-    if not text:
+    if not task_name:
         return "unknown_task"
-    return base64.urlsafe_b64encode(text.encode('utf-8')).decode('utf-8').rstrip('=')
+    combined = f"{task_name}_{owner}".strip().lower()
+    return base64.urlsafe_b64encode(combined.encode('utf-8')).decode('utf-8').rstrip('=')
 
 # ─────────────────────────────────────────
 # STEP 1 — Create or update the search index
 # ─────────────────────────────────────────
 def create_index():
-    """Create Azure AI Search index with task schema"""
+    """Create Azure AI Search index with task schema (Purges old index if exists)"""
     print("📐 Setting up Azure AI Search index...")
+
+    try:
+        index_client.delete_index(SEARCH_INDEX)
+        print(f"  🗑️  Old index '{SEARCH_INDEX}' purged.")
+    except Exception:
+        pass
 
     fields = [
         SimpleField(name="id", type=SearchFieldDataType.String, key=True),
@@ -81,8 +88,9 @@ def index_from_table_storage():
 
     for entity in entities:
         task_name = entity.get("Task", "")
+        owner = entity.get("Owner", "Jaymee")
         doc = {
-            "id": generate_safe_id(entity.get("RowKey", task_name)),
+            "id": generate_safe_id(task_name, owner),
             "task": task_name,
             "owner": entity.get("Owner", "Jaymee"),
             "due_date": entity.get("DueDate", "TBD"),
@@ -113,8 +121,9 @@ def index_from_csv(csv_path="data/powerbi_export.csv"):
         reader = csv.DictReader(f)
         for row in reader:
             task_name = row.get("Task", "")
+            owner = row.get("Owner", "Jaymee")
             doc = {
-                "id": generate_safe_id(task_name),
+                "id": generate_safe_id(task_name, owner),
                 "task": task_name,
                 "owner": row.get("Owner", "Jaymee"),
                 "due_date": row.get("DueDate", row.get("Due Date", "TBD")),
@@ -171,8 +180,9 @@ def index_single_task(task: dict):
         index_single_task(task)
     """
     task_name = task.get("task", "")
+    owner = task.get("owner", "Jaymee")
     doc = {
-        "id": generate_safe_id(task_name),
+        "id": generate_safe_id(task_name, owner),
         "task": task_name,
         "owner": task.get("owner", "Jaymee"),
         "due_date": task.get("due_date", "TBD"),

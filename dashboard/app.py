@@ -36,7 +36,7 @@ def get_all_tasks():
     """Fetch all tasks from PostgreSQL"""
     conn = get_pg_connection()
     cur = conn.cursor()
-    cur.execute("SELECT task, owner, due_date, status, category, priority FROM tasks ORDER BY id ASC")
+    cur.execute("SELECT task, owner, due_date, status, category, priority, source, confidence, approval_status FROM tasks ORDER BY id ASC")
     tasks = []
     for row in cur.fetchall():
         tasks.append({
@@ -45,7 +45,10 @@ def get_all_tasks():
             "due_date": row[2],
             "status": row[3],
             "category": row[4],
-            "priority": row[5]
+            "priority": row[5],
+            "source": row[6],
+            "confidence": row[7],
+            "approval_status": row[8]
         })
     cur.close()
     conn.close()
@@ -53,11 +56,16 @@ def get_all_tasks():
 
 @app.route("/")
 def dashboard():
-    tasks = get_all_tasks()
-    high = [t for t in tasks if t["priority"] == "High"]
-    in_progress = [t for t in tasks if t["status"] == "In Progress"]
+    all_tasks = get_all_tasks()
+    # Filter out Rejected tasks from the dashboard entirely
+    dashboard_tasks = [t for t in all_tasks if t["approval_status"] != "Rejected"]
+    
+    # High Priority and In Progress (Approved only for specific tabs, but Dashboard shows all non-rejected)
+    high = [t for t in dashboard_tasks if t["priority"] == "High" and t["approval_status"] == "Approved"]
+    in_progress = [t for t in dashboard_tasks if t["status"] == "In Progress" and t["approval_status"] == "Approved"]
+    
     return render_template("index.html", 
-                         tasks=tasks,
+                         tasks=dashboard_tasks,
                          high_priority=high,
                          in_progress=in_progress)
 
@@ -144,6 +152,55 @@ def sync_data():
         return jsonify({"status": "success", "message": "Synchronization complete!"})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route("/api/task/approve", methods=["POST"])
+def approve_task():
+    """Approve a pending task"""
+    data = request.json
+    task_name = data.get("task")
+    if not task_name:
+        return jsonify({"error": "Task name required"}), 400
+    
+    try:
+        conn = get_pg_connection()
+        cur = conn.cursor()
+        cur.execute("UPDATE tasks SET approval_status = 'Approved' WHERE task = %s", (task_name,))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return jsonify({"status": "success", "message": f"Task '{task_name}' approved!"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/task/reject", methods=["POST"])
+def reject_task():
+    """Reject a pending task and log it"""
+    data = request.json
+    task_name = data.get("task")
+    reason = data.get("reason", "No reason provided")
+    if not task_name:
+        return jsonify({"error": "Task name required"}), 400
+    
+    try:
+        conn = get_pg_connection()
+        cur = conn.cursor()
+        
+        # 1. Log rejection to change_logs
+        cur.execute("""
+            INSERT INTO change_logs (task_name, field_changed, old_value, new_value)
+            VALUES (%s, 'rejection', 'Pending', %s)
+        """, (task_name, reason))
+        
+        # 2. Delete from tasks table (or update to Rejected and hide)
+        # Choosing to keep it as 'Rejected' in DB as per status behavior "Rejected tasks → hidden from dashboard"
+        cur.execute("UPDATE tasks SET approval_status = 'Rejected' WHERE task = %s", (task_name,))
+        
+        conn.commit()
+        cur.close()
+        conn.close()
+        return jsonify({"status": "success", "message": f"Task '{task_name}' rejected."})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     app.run(debug=True)

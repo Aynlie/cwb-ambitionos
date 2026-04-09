@@ -14,6 +14,9 @@ from azure.data.tables import TableServiceClient
 # Fix Windows console encoding
 sys.stdout.reconfigure(encoding='utf-8')
 
+# Ensure the root directory is in the path for internal imports
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 load_dotenv()
 
 # ─────────────────────────────────────────
@@ -89,7 +92,9 @@ def map_task_data(data, source_type):
             "status": data.get("status", "Not Started"),
             "priority": data.get("priority", "Low"),
             "category": data.get("category", "Admin"),
-            "source": data.get("source", "postgres")
+            "source": data.get("source", "postgres"),
+            "confidence": data.get("confidence", "Medium"),
+            "approval_status": data.get("approval_status", "Approved")
         }
     return data
 
@@ -199,10 +204,10 @@ def load_from_postgres():
     """Fetch current tasks from PostgreSQL"""
     conn = get_pg_connection()
     cur = conn.cursor()
-    cur.execute("SELECT task, owner, due_date, status, priority, category, source FROM tasks")
+    cur.execute("SELECT task, owner, due_date, status, priority, category, source, confidence, approval_status FROM tasks")
     old_tasks = {}
     for row in cur.fetchall():
-        task, owner, due_date, status, priority, category, source = row
+        task, owner, due_date, status, priority, category, source, confidence, approval_status = row
         task_data = {
             "task": task,
             "owner": owner,
@@ -210,7 +215,9 @@ def load_from_postgres():
             "status": status,
             "priority": priority,
             "category": category,
-            "source": source
+            "source": source,
+            "confidence": confidence,
+            "approval_status": approval_status
         }
         mapped = map_task_data(task_data, "postgres")
         old_tasks[normalize(task)] = mapped
@@ -275,8 +282,8 @@ def run_change_detection():
         if task_id not in pg_tasks:
             print(f"[NEW] TASK: {task_name}")
             cur.execute("""
-                INSERT INTO tasks (task, owner, due_date, status, category, priority, source)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO tasks (task, owner, due_date, status, category, priority, source, confidence, approval_status)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ON CONFLICT (task) DO NOTHING
             """, (
                 task_name,
@@ -285,8 +292,14 @@ def run_change_detection():
                 new_task["status"],
                 new_task["category"],
                 new_task["priority"],
-                new_task["source"]
+                new_task["source"],
+                new_task.get("confidence", "Medium"),
+                new_task.get("approval_status", "Approved")
             ))
+            # Trigger Power Automate for new high priority tasks
+            if normalize(new_task.get("priority")) == "high":
+                trigger_power_automate(task_name, {"new_task": "created"}, "High")
+
             log_change(cur, task_name, "new_task", "None", new_task["status"])
             sync_to_search(new_task)
             new_tasks_log.append(task_name)

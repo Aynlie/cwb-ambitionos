@@ -9,23 +9,54 @@ An agentic AI personal dashboard and project planner built with Microsoft Azure 
 ---
 
 ## 🏗️ Architecture
+
+![AmbitionOS Architecture](docs/architecture.png)
+
+```mermaid
+graph TD
+    %% Sources
+    subgraph Sources [Input Sources]
+        Email["Email threads"]
+        Syllabus["Academic Syllabus"]
+        Notes["Meeting Notes"]
+    end
+
+    %% Agents & Processing
+    subgraph AgentLayer [AI Agent Layer]
+        OA["Onboarding Agent"]
+        Claude["Claude 3.5 Sonnet"]
+    end
+
+    %% Storage
+    subgraph Storage [Data Storage]
+        ATS["Azure Table Storage"]
+        AIS["Azure AI Search"]
+        CDA["Change Detection Agent"]
+        PG["PostgreSQL"]
+    end
+
+    %% Human-in-the-Loop & Visualization
+    subgraph Output [User Interface & Automation]
+        FD["Flask Dashboard"]
+        PA["Power Automate"]
+        PBI["Power BI"]
+    end
+
+    %% Connections
+    Sources --> OA
+    OA <--> Claude
+    OA --> ATS
+    OA --> AIS
+    ATS --> CDA
+    CDA --> PG
+    PG --> PBI
+    AIS --> FD
+    PG --> FD
+    FD --> PA
+    PA --> PG
 ```
-[Meeting Notes / Emails / CSV]
-        ↓
-[Azure Blob Storage]
-        ↓
-[Extraction Agent] ──── Azure AI Language
-        ↓
-[Azure Table Storage] ←→ [PostgreSQL Tasks Table]
-        ↓
-[Change Detection Agent]
-        ↓
-[Power Automate Approval Flow]
-        ↓
-[Flask Dashboard] ←── Azure AI Search
-        ↓
-[Power BI Dashboard]
-```
+
+Full technical flow: **Unstructured Data** → **Onboarding Agent (Claude)** → **Azure Table Storage** → **Change Detection Agent** → **PostgreSQL** → **Human Approval (Dashboard)** → **Power BI**.
 
 ---
 
@@ -86,8 +117,9 @@ cwb-ambitionos/
 │   └── templates/
 │       └── index.html            # 5-tab dashboard UI
 │
-└── architecture/
-    └── architecture_diagram.png  # System architecture diagram
+├── docs/
+│   ├── architecture.md           # Mermaid source for architecture
+│   └── architecture.png          # System architecture diagram
 ```
 
 ---
@@ -228,6 +260,8 @@ CREATE TABLE tasks (
     category VARCHAR(100),
     priority VARCHAR(50),
     source VARCHAR(100),
+    confidence VARCHAR(20) DEFAULT 'Medium',
+    approval_status VARCHAR(20) DEFAULT 'Approved',
     extracted_at TIMESTAMP DEFAULT NOW()
 );
 

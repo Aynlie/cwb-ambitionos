@@ -31,6 +31,7 @@ def setup_database():
             priority VARCHAR(50),
             source VARCHAR(100),
             confidence VARCHAR(20) DEFAULT 'Medium',
+            approval_status VARCHAR(20) DEFAULT 'Approved',
             extracted_at TIMESTAMP DEFAULT NOW()
         );
     """)
@@ -60,8 +61,8 @@ def sync_tasks_from_table_storage(tasks):
     for task in tasks:
         cur.execute("""
             INSERT INTO tasks 
-                (task, owner, due_date, status, category, priority, source, confidence)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                (task, owner, due_date, status, category, priority, source, confidence, approval_status)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             ON CONFLICT DO NOTHING;
         """, (
             task.get("task", ""),
@@ -71,7 +72,8 @@ def sync_tasks_from_table_storage(tasks):
             task.get("category", "General"),
             task.get("priority", "Medium"),
             task.get("source", "manual"),
-            task.get("confidence", "Medium")
+            task.get("confidence", "Medium"),
+            task.get("approval_status", "Approved")
         ))
         print(f"  ✅ Synced: {task.get('task')}")
     

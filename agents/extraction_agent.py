@@ -1,6 +1,11 @@
 import os
+import sys
 import csv
 from dotenv import load_dotenv
+
+# Ensure the root directory is in the path for internal imports
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from azure.ai.textanalytics import TextAnalyticsClient
 from azure.core.credentials import AzureKeyCredential
 from azure.data.tables import TableServiceClient
@@ -23,10 +28,10 @@ table_client = table_service.get_table_client("ambitionosdata")
 
 def extract_from_text(text):
     """Extract key phrases and entities from text"""
-    print("🧠 Extracting key phrases...")
+    print("Extracting key phrases...")
     key_phrases = language_client.extract_key_phrases([text])[0]
     
-    print("🔍 Recognizing entities...")
+    print("Recognizing entities...")
     entities = language_client.recognize_entities([text])[0]
     
     tasks = []
@@ -95,10 +100,11 @@ def save_task(task, source):
         "Priority": task["priority"],
         "Source": source,
         "Confidence": task.get("confidence", "Medium"),
+        "ApprovalStatus": task.get("approval_status", "Approved"),
         "ExtractedAt": datetime.utcnow().isoformat()
     }
     table_client.upsert_entity(entity)
-    print(f"  ✅ Saved: {task['task']}")
+    print(f"  OK Saved: {task['task']}")
     
     # Push to Search Index
     task_with_source = task.copy()
@@ -110,7 +116,7 @@ def save_task(task, source):
 
 def load_from_csv():
     """Load tasks directly from CSV file"""
-    print("📊 Loading tasks from CSV...")
+    print("[CSV] Loading tasks from CSV...")
     
     with open("data/task_tracker_baseline.csv", "r") as f:
         reader = csv.DictReader(f)
@@ -129,10 +135,10 @@ def load_from_csv():
                 "ExtractedAt": datetime.utcnow().isoformat()
             }
             table_client.upsert_entity(entity)
-            print(f"  ✅ Saved: {row['Task']}")
+            print(f"  OK Saved: {row['Task']}")
             count += 1
     
-    print(f"\n✅ Loaded {count} tasks from CSV!")
+    print(f"\nOK Loaded {count} tasks from CSV!")
     return count
 
 def run():
@@ -147,11 +153,11 @@ def run():
         text = f.read()
     
     tasks = extract_from_text(text)
-    print(f"\n📋 Found {len(tasks)} additional tasks from notes\n")
+    print(f"\n[OK] Found {len(tasks)} additional tasks from notes\n")
     for task in tasks:
         save_task(task, "meeting_notes.txt")
     
-    print("\n🎉 All done!")
+    print("\nAll done!")
 
 if __name__ == "__main__":
     run()

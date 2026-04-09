@@ -3,8 +3,13 @@ import sys
 import json
 import anthropic
 from dotenv import load_dotenv
+
+# Ensure the root directory is in the path for internal imports
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from agents.extraction_agent import save_task
 from database.sync_tasks import sync_to_postgres
+from agents.change_detection_agent import run_change_detection
 
 # ─────────────────────────────────────────
 # CONFIG & ENCODING
@@ -118,14 +123,16 @@ def run_onboarding(file_path):
     # 3. Save to Table Storage & Index to Search
     source_name = os.path.basename(file_path)
     for task in tasks:
+        # Set Pending status for human review
+        task["approval_status"] = "Pending"
         # save_task handles Table Storage + Search Indexing
         save_task(task, source_name)
     
-    # 4. Sync to PostgreSQL
-    print("\n🐘 Syncing new tasks to PostgreSQL...")
-    sync_to_postgres(tasks)
+    # 4. Run Change Detection (Syncs to PostgreSQL + Logs + Triggers Notifications)
+    print("\nElephant Running Change Detection to sync new tasks...")
+    run_change_detection()
     
-    print("\n🎉 Onboarding complete! Check your dashboard.")
+    print("\nOnboarding complete! Check your dashboard.")
 
 # ─────────────────────────────────────────
 # MAIN

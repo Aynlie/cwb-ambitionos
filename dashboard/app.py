@@ -107,6 +107,34 @@ def search():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route("/api/task_history/<path:task_name>")
+def task_history(task_name):
+    """Fetch change logs for a specific task"""
+    try:
+        conn = get_pg_connection()
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT field_changed, old_value, new_value, changed_at 
+            FROM change_logs 
+            WHERE task_name = %s 
+            ORDER BY changed_at DESC
+        """, (task_name,))
+        
+        history = []
+        for row in cur.fetchall():
+            history.append({
+                "field": row[0],
+                "old": row[1],
+                "new": row[2],
+                "at": row[3].strftime("%Y-%m-%d %H:%M")
+            })
+        
+        cur.close()
+        conn.close()
+        return jsonify(history)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.route("/sync", methods=["POST"])
 def sync_data():
     """Trigger the change detection agent"""

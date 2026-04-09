@@ -94,6 +94,7 @@ def save_task(task, source):
         "Category": task["category"],
         "Priority": task["priority"],
         "Source": source,
+        "Confidence": task.get("confidence", "Medium"),
         "ExtractedAt": datetime.utcnow().isoformat()
     }
     table_client.upsert_entity(entity)

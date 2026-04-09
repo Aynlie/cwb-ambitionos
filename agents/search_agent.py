@@ -69,6 +69,7 @@ def create_index():
         SimpleField(name="category", type=SearchFieldDataType.String, filterable=True, facetable=True),
         SimpleField(name="priority", type=SearchFieldDataType.String, filterable=True, facetable=True),
         SimpleField(name="source", type=SearchFieldDataType.String, filterable=True),
+        SimpleField(name="confidence", type=SearchFieldDataType.String, filterable=True, facetable=True),
     ]
 
     index = SearchIndex(name=SEARCH_INDEX, fields=fields)
@@ -98,6 +99,7 @@ def index_from_table_storage():
             "category": entity.get("Category", "Admin"),
             "priority": entity.get("Priority", "Low"),
             "source": entity.get("Source", "table_storage"),
+            "confidence": entity.get("Confidence", "Medium"),
         }
         documents.append(doc)
 
@@ -131,6 +133,7 @@ def index_from_csv(csv_path="data/powerbi_export.csv"):
                 "category": row.get("Category", "Admin"),
                 "priority": row.get("Priority", "Low"),
                 "source": row.get("Source", csv_path),
+                "confidence": row.get("Confidence", "Medium"),
             }
             documents.append(doc)
 
@@ -190,6 +193,7 @@ def index_single_task(task: dict):
         "category": task.get("category", "Admin"),
         "priority": task.get("priority", "Low"),
         "source": task.get("source", "extraction_agent"),
+        "confidence": task.get("confidence", "Medium"),
     }
     
     try:

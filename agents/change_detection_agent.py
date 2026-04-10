@@ -91,7 +91,8 @@ def map_task_data(data, source_type):
             "category": data.get("Category", "Admin"),
             "source": data.get("Source", "table_storage"),
             "confidence": data.get("Confidence", "Medium"),
-            "approval_status": data.get("ApprovalStatus", "Approved")
+            "approval_status": data.get("ApprovalStatus", "Approved"),
+            "dependency": data.get("Dependency", None)
         }
     elif source_type == "postgres":
         return {
@@ -103,7 +104,8 @@ def map_task_data(data, source_type):
             "category": data.get("category", "Admin"),
             "source": data.get("source", "postgres"),
             "confidence": data.get("confidence", "Medium"),
-            "approval_status": data.get("approval_status", "Approved")
+            "approval_status": data.get("approval_status", "Approved"),
+            "dependency": data.get("dependency", None)
         }
     return data
 

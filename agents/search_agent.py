@@ -70,6 +70,7 @@ def create_index():
         SimpleField(name="priority", type=SearchFieldDataType.String, filterable=True, facetable=True),
         SimpleField(name="source", type=SearchFieldDataType.String, filterable=True),
         SimpleField(name="confidence", type=SearchFieldDataType.String, filterable=True, facetable=True),
+        SimpleField(name="dependency", type=SearchFieldDataType.String, filterable=True),
     ]
 
     index = SearchIndex(name=SEARCH_INDEX, fields=fields)

@@ -62,7 +62,8 @@ def extract_tasks_with_claude(input_text):
                 "category": "Admin",
                 "priority": "High",
                 "source": "Meeting Notes",
-                "confidence": "High"
+                "confidence": "High",
+                "dependency": None
             },
             {
                 "task": "Complete MLSA Profile Sync",
@@ -72,7 +73,8 @@ def extract_tasks_with_claude(input_text):
                 "category": "Ambassador",
                 "priority": "Medium",
                 "source": "Email",
-                "confidence": "Medium"
+                "confidence": "Medium",
+                "dependency": "Welcome to AmbitionOS!"
             }
         ]
 

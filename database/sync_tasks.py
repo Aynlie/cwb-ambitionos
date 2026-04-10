@@ -32,7 +32,8 @@ def get_tasks_from_table_storage():
             "priority": entity.get("Priority", "Medium"),
             "source": entity.get("Source", "manual"),
             "confidence": entity.get("Confidence", "Medium"),
-            "approval_status": entity.get("ApprovalStatus", "Approved")
+            "approval_status": entity.get("ApprovalStatus", "Approved"),
+            "dependency": entity.get("Dependency", None)
         })
     return tasks
 
@@ -45,8 +46,8 @@ def sync_to_postgres(tasks):
     for task in tasks:
         cur.execute("""
             INSERT INTO tasks 
-                (task, owner, due_date, status, category, priority, source, confidence, approval_status)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                (task, owner, due_date, status, category, priority, source, confidence, approval_status, dependency)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             ON CONFLICT (task) DO NOTHING;
         """, (
             task["task"],
@@ -57,7 +58,8 @@ def sync_to_postgres(tasks):
             task["priority"],
             task["source"],
             task.get("confidence", "Medium"),
-            task.get("approval_status", "Approved")
+            task.get("approval_status", "Approved"),
+            task.get("dependency")
         ))
         print(f"  ✅ Synced: {task['task']}")
         synced += 1

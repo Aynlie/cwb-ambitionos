@@ -61,8 +61,8 @@ def sync_tasks_from_table_storage(tasks):
     for task in tasks:
         cur.execute("""
             INSERT INTO tasks 
-                (task, owner, due_date, status, category, priority, source, confidence, approval_status)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                (task, owner, due_date, status, category, priority, source, confidence, approval_status, dependency)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             ON CONFLICT DO NOTHING;
         """, (
             task.get("task", ""),
@@ -73,7 +73,8 @@ def sync_tasks_from_table_storage(tasks):
             task.get("priority", "Medium"),
             task.get("source", "manual"),
             task.get("confidence", "Medium"),
-            task.get("approval_status", "Approved")
+            task.get("approval_status", "Approved"),
+            task.get("dependency")
         ))
         print(f"  ✅ Synced: {task.get('task')}")
     

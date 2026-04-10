@@ -1,0 +1,11 @@
+Milestone 1: Project Setup & Baseline Creation — April 6, 2026
+Sub-tasks: Set up GitHub repository, Create task_tracker_baseline.csv, Configure .env secrets
+
+Milestone 2: Agent Architecture & Storage Implementation — April 13, 2026
+Sub-tasks: Write Onboarding Agent, Deploy Azure Table Storage, Setup PostgreSQL tasks schema, Implement Change Detection Engine
+
+Milestone 3: Human Workflow & Power BI Integration — April 20, 2026
+Sub-tasks: Build Flask UI, Implement Approve/Reject logic, Trigger Power Automate webhooks, Develop vw_gantt SQL view
+
+Milestone 4: Polish & Final Submission — May 3, 2026
+Sub-tasks: Install Power BI Gantt add-on, Filter dashboards by Approval Status, Record 3-minute demo video, Write README Risk & Safety evaluation

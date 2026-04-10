@@ -1,0 +1,34 @@
+Meeting: Project Kickoff & Week 1 Alignment
+Date: April 6, 2026
+Time: 10:00 AM SGT
+Attendees: Jaymee Santos, ISACA Mentor
+Decisions: AmbitionOS setup will use local Python and SQLite initially, migrating to PostgreSQL next.
+Actions: Jaymee to finalize baseline tracker CSV and setup GitHub repo.
+
+Meeting: Week 2 Architecture Review
+Date: April 10, 2026
+Time: 2:00 PM SGT
+Attendees: Jaymee Santos, CWB Technical Lead
+Decisions: AI features must cover extraction and summarization. Azure OpenAI approved for use.
+Actions: Jaymee to implement Change Detection Agent and set up Azure Table Storage.
+
+Meeting: Week 3 Dashboard Alignment
+Date: April 17, 2026
+Time: 11:00 AM SGT
+Attendees: Jaymee Santos
+Decisions: Dashboard needs direct integration with PostgreSQL. Power BI to handle Gantt chart.
+Actions: Jaymee to build SQL views (vw_gantt, vw_overview) and connect Power BI directly.
+
+Meeting: Week 4 Demo Prep & Hackathon Polish
+Date: April 24, 2026
+Time: 4:00 PM SGT
+Attendees: Jaymee Santos, Presentation Coach
+Decisions: Demo video needs to vividly document the Human-in-the-Loop workflow.
+Actions: Jaymee to record end-to-end task extraction and approval.
+
+Meeting: SheLeadsTech Final Review
+Date: April 25, 2026
+Time: 9:00 AM SGT
+Attendees: Jaymee Santos, ISACA Chapter Lead
+Decisions: Application essay is solid; requires final endorsement letter.
+Actions: Jaymee to request HAU recommendation letter before the May 5 deadline.

@@ -36,7 +36,7 @@ def get_all_tasks():
     """Fetch all tasks from PostgreSQL"""
     conn = get_pg_connection()
     cur = conn.cursor()
-    cur.execute("SELECT task, owner, due_date, status, category, priority, source, confidence, approval_status FROM tasks ORDER BY id ASC")
+    cur.execute("SELECT task, owner, due_date, status, category, priority, source, confidence, approval_status, dependency FROM tasks ORDER BY id ASC")
     tasks = []
     for row in cur.fetchall():
         tasks.append({
@@ -48,7 +48,8 @@ def get_all_tasks():
             "priority": row[5],
             "source": row[6],
             "confidence": row[7],
-            "approval_status": row[8]
+            "approval_status": row[8],
+            "dependency": row[9]
         })
     cur.close()
     conn.close()

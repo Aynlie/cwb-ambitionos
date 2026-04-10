@@ -18,6 +18,9 @@
             --high-priority: #ff4757;
             --medium-priority: #ffa502;
             --low-priority: #2ed573;
+            --pending-color: #ffa502;
+            --approve-color: #2ed573;
+            --reject-color: #ff4757;
         }
 
         body {
@@ -307,7 +310,18 @@
         .Low { background: rgba(46, 213, 115, 0.2); color: #2ed573; border: 1px solid #2ed573;}
         .In-Progress, .In.Progress { background: rgba(30, 144, 255, 0.2); color: #1e90ff; border: 1px solid #1e90ff;}
         .Not-Started { background: rgba(200, 200, 200, 0.1); color: #cccccc; border: 1px solid #cccccc;}
-        .Pending { background: rgba(255, 255, 0, 0.2); color: #ffff00; border: 1px solid #ffff00;}
+        .Pending { 
+            background: rgba(255, 165, 2, 0.2); 
+            color: #ffa502; 
+            border: 1px solid #ffa502;
+            animation: pulse-border 2s infinite;
+        }
+
+        @keyframes pulse-border {
+            0% { box-shadow: 0 0 0 0 rgba(255, 165, 2, 0.4); }
+            70% { box-shadow: 0 0 0 6px rgba(255, 165, 2, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 165, 2, 0); }
+        }
         .Ready { background: rgba(200, 100, 255, 0.2); color: #e056fd; border: 1px solid #e056fd;}
         .Watching { background: rgba(255, 200, 0, 0.2); color: #f9ca24; border: 1px solid #f9ca24;}
         .Waiting { background: rgba(255, 120, 0, 0.2); color: #f0932b; border: 1px solid #f0932b;}
@@ -330,6 +344,50 @@
         .log-date { font-size: 12px; color: var(--accent-2); margin-bottom: 5px; }
         .log-task { font-weight: 600; color: var(--text-heading); }
         .log-change { background: rgba(255,255,255,0.05); display: inline-block; padding: 2px 8px; border-radius: 4px; margin-top: 5px; color: var(--accent-1); }
+
+        /* MODAL ACTIONS */
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .btn-approve, .btn-reject {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 14px;
+        }
+
+        .btn-approve {
+            background: rgba(46, 213, 115, 0.2);
+            color: #2ed573;
+            border: 1px solid #2ed573;
+        }
+
+        .btn-approve:hover {
+            background: #2ed573;
+            color: #000;
+        }
+
+        .btn-reject {
+            background: rgba(255, 71, 87, 0.2);
+            color: #ff4757;
+            border: 1px solid #ff4757;
+        }
+
+        .btn-reject:hover {
+            background: #ff4757;
+            color: #000;
+        }
 
     </style>
 </head>
@@ -388,7 +446,7 @@
                         <p style="opacity:0.6; text-align:center;">No high priority tasks! You're cruising! 🚀</p>
                     {% endif %}
                     {% for task in high_priority %}
-                    <div class="task-item" onclick='openTaskModal({{ task|tojson|safe }})'>
+                    <div class="task-item" onclick="openTaskModal({{ task|tojson|forceescape }})">
                         <div class="name">{{ task.task }}</div>
                         <div class="meta">
                             <span class="badge High">High</span>
@@ -411,7 +469,7 @@
             <div class="section-header">All Active Tasks</div>
             <div class="tasks-grid" style="grid-template-columns: repeat(3, 1fr);">
                 {% for task in tasks %}
-                <div class="task-item" onclick='openTaskModal({{ task|tojson|safe }})'>
+                <div class="task-item" onclick="openTaskModal({{ task|tojson|forceescape }})">
                     <div class="name">{{ task.task }}</div>
                     <div class="meta">
                         <span class="badge {{ task.priority }}">{{ task.priority }}</span>
@@ -432,7 +490,7 @@
             <div class="tasks-grid" style="grid-template-columns: repeat(3, 1fr);">
                 {% for task in tasks %}
                     {% if task.category in ['Internship', 'Scholarship', 'Ambassador'] and task.approval_status == 'Approved' %}
-                    <div class="task-item" onclick='openTaskModal({{ task|tojson|safe }})'>
+                    <div class="task-item" onclick="openTaskModal({{ task|tojson|forceescape }})">
                         <div class="name">{{ task.task }}</div>
                         <div class="meta">
                             <span class="badge {{ task.priority }}">{{ task.priority }}</span>
@@ -450,7 +508,7 @@
             <div class="tasks-grid" style="grid-template-columns: repeat(3, 1fr);">
                 {% for task in tasks %}
                     {% if task.category in ['Admin', 'Education', 'School'] and task.approval_status == 'Approved' %}
-                    <div class="task-item" onclick='openTaskModal({{ task|tojson|safe }})'>
+                    <div class="task-item" onclick="openTaskModal({{ task|tojson|forceescape }})">
                         <div class="name">{{ task.task }}</div>
                         <div class="meta">
                             <span class="badge {{ task.priority }}">{{ task.priority }}</span>
@@ -468,7 +526,7 @@
             <div class="tasks-grid" style="grid-template-columns: repeat(3, 1fr);">
                 {% for task in tasks %}
                     {% if task.category in ['Certification', 'Course', 'Learning'] and task.approval_status == 'Approved' %}
-                    <div class="task-item" onclick='openTaskModal({{ task|tojson|safe }})'>
+                    <div class="task-item" onclick="openTaskModal({{ task|tojson|forceescape }})">
                         <div class="name">{{ task.task }}</div>
                         <div class="meta">
                             <span class="badge {{ task.priority }}">{{ task.priority }}</span>
@@ -486,7 +544,7 @@
             <div class="tasks-grid" style="grid-template-columns: repeat(3, 1fr);">
                 {% for task in tasks %}
                     {% if task.category in ['Content', 'Personal'] and task.approval_status == 'Approved' %}
-                    <div class="task-item" onclick='openTaskModal({{ task|tojson|safe }})'>
+                    <div class="task-item" onclick="openTaskModal({{ task|tojson|forceescape }})">
                         <div class="name">{{ task.task }}</div>
                         <div class="meta">
                             <span class="badge {{ task.priority }}">{{ task.priority }}</span>
@@ -678,6 +736,7 @@
 
         // Modal Logic
         async function openTaskModal(task) {
+            document.getElementById('taskModalOverlay').style.display = 'flex';
             document.getElementById('modalTaskName').innerText = task.task;
             const details = document.getElementById('modalDetails');
             details.innerHTML = `

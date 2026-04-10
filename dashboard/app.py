@@ -164,7 +164,16 @@ def approve_task():
     try:
         conn = get_pg_connection()
         cur = conn.cursor()
+        
+        # 1. Update status
         cur.execute("UPDATE tasks SET approval_status = 'Approved' WHERE task = %s", (task_name,))
+        
+        # 2. Log changes
+        cur.execute("""
+            INSERT INTO change_logs (task_name, field_changed, old_value, new_value)
+            VALUES (%s, 'approval_status', 'Pending', 'Approved')
+        """, (task_name,))
+        
         conn.commit()
         cur.close()
         conn.close()
@@ -174,7 +183,7 @@ def approve_task():
 
 @app.route("/api/task/reject", methods=["POST"])
 def reject_task():
-    """Reject a pending task and log it"""
+    """Reject a task with a reason"""
     data = request.json
     task_name = data.get("task")
     reason = data.get("reason", "No reason provided")
@@ -185,15 +194,14 @@ def reject_task():
         conn = get_pg_connection()
         cur = conn.cursor()
         
-        # 1. Log rejection to change_logs
+        # 1. Update status
+        cur.execute("UPDATE tasks SET approval_status = 'Rejected' WHERE task = %s", (task_name,))
+        
+        # 2. Log rejection with reason
         cur.execute("""
             INSERT INTO change_logs (task_name, field_changed, old_value, new_value)
-            VALUES (%s, 'rejection', 'Pending', %s)
+            VALUES (%s, 'rejected_with_reason', 'Pending', %s)
         """, (task_name, reason))
-        
-        # 2. Delete from tasks table (or update to Rejected and hide)
-        # Choosing to keep it as 'Rejected' in DB as per status behavior "Rejected tasks → hidden from dashboard"
-        cur.execute("UPDATE tasks SET approval_status = 'Rejected' WHERE task = %s", (task_name,))
         
         conn.commit()
         cur.close()

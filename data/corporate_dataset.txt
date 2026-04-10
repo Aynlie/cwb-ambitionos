@@ -1,0 +1,20 @@
+SJ GROUP PRE-HACKATHON ALIGNMENT
+Date: April 5, 2026
+Attendees: Marcus (Lead Architect), Sarah (Project Manager), Jaymee (Developer)
+
+Marcus:
+"Alright team, we need to push hard for the Microsoft Code Without Barriers Hackathon. Our Q3 Goal is entirely dependent on finalizing this architecture. Jaymee, I need you to lead the Infrastructure Audit. This is critical. Make sure it's completed by April 18 so we have time to review before week 3."
+
+Sarah:
+"Agreed. I've updated the timeline. The Infrastructure Audit is now blocking the Security Compliance Review. Jaymee, once you finish the audit, trigger the compliance review. The compliance review needs to be done by April 24."
+
+Jaymee:
+"Understood. I will get the Infrastructure Audit done by the 18th. For the compliance review, I'll need access to the latest security guidelines."
+
+Sarah:
+"I will send those over today. Also, don't forget the Final Architecture Presentation is scheduled for May 1. All changes must be locked in by then."
+
+Action Items:
+- Infrastructure Audit (Owner: Jaymee, Due: April 18, Status: Not Started, Priority: High, Category: Milestone)
+- Security Compliance Review (Owner: Jaymee, Due: April 24, Status: Not Started, Priority: High, Category: Review, Dependency: Infrastructure Audit)
+- Final Architecture Presentation (Owner: Jaymee, Due: May 1, Status: Not Started, Priority: Medium, Category: Project)

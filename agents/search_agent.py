@@ -1,8 +1,11 @@
 import os
+import sys
 import csv
 import time
 from dotenv import load_dotenv
 import base64
+
+sys.stdout.reconfigure(encoding='utf-8')
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
 from azure.search.documents.indexes import SearchIndexClient

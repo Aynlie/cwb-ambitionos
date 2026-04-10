@@ -21,6 +21,12 @@ graph TD
         Notes["Meeting Notes"]
     end
 
+    %% Amby
+    subgraph AmbyFlow [Amby Onboarding]
+        Amby["AI Onboarding"]
+        UP["User Profiles"]
+    end
+
     %% Agents & Processing
     subgraph AgentLayer [AI Agent Layer]
         OA["Onboarding Agent"]
@@ -32,6 +38,7 @@ graph TD
         ATS["Azure Table Storage"]
         AIS["Azure AI Search"]
         CDA["Change Detection Agent"]
+        GPT4["GPT-4o Summary"]
         PG["PostgreSQL"]
     end
 
@@ -43,12 +50,15 @@ graph TD
     end
 
     %% Connections
+    Amby --> UP
+    UP --> FD
     Sources --> OA
     OA <--> Claude
     OA --> ATS
     OA --> AIS
     ATS --> CDA
-    CDA --> PG
+    CDA --> GPT4
+    GPT4 --> PG
     PG --> PBI
     AIS --> FD
     PG --> FD
@@ -210,9 +220,14 @@ Open 👉 http://127.0.0.1:5000
 ## 🤖 Agents
 
 ### Extraction Agent (`agents/extraction_agent.py`)
-- Loads 9 structured tasks from `task_tracker_baseline.csv`
-- Extracts additional tasks from `meeting_notes.txt` using Azure AI Language
-- Saves all tasks to Azure Table Storage and syncs to PostgreSQL
+- Loads structured tasks from `task_tracker_baseline.csv`
+- Extracts additional tasks from meeting notes and email threads using **Claude 3.5 Sonnet**
+- Saves all tasks to Azure Table Storage and syncs to Azure AI Search
+
+### Amby: AI Onboarding (`dashboard/templates/onboarding.html`)
+- Personalized greeting and persona configuration (Student, Professional, Career Shifter)
+- Dynamically configures dashboard tabs and task categories based on user needs
+- Stores persistent user preferences in PostgreSQL `user_profiles`
 
 ### Change Detection Agent (`agents/change_detection_agent.py`)
 - Compares tasks across 3 sources (Table Storage > CSV > PG)
@@ -240,11 +255,11 @@ Send approval email          Send rejection email
 ---
 
 ## 📊 Dashboard Features
-- **Dashboard tab** — Today's priorities, stats, change log, search bar, and **One-Click Sync**
-- **Opportunities tab** — Internships, Scholarships, Ambassador programs
-- **School tab** — Certifications, deadlines
-- **Grow tab** — GitHub streak, skills, learning
-- **Me tab** — Profile, goals, preferences
+- **Amby Onboarding** — Smart persona-driven setup wizard
+- **Dashboard tab** — Today's priorities, stats, recent changes, and **One-Click Sync**
+- **Dynamic Tabs** — Tab layouts (Gantt, Opportunities, Research) adapt to your persona
+- **Search bar** — Powered by Azure AI Search with keyword and priority filtering
+- **Coffee Chat** — A unique collaborator discovery vision for student and shifter networking
 
 ---
 

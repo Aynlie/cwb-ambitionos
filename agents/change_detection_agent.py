@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
 from azure.data.tables import TableServiceClient
+from openai import AzureOpenAI
 
 # Fix Windows console encoding
 sys.stdout.reconfigure(encoding='utf-8')
@@ -48,6 +49,12 @@ table_client = table_service.get_table_client("ambitionosdata")
 # Anthropic Claude client
 claude_client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
+# Azure OpenAI client
+openai_client = AzureOpenAI(
+    api_key=os.getenv("AZURE_OPENAI_KEY"),  
+    api_version="2024-02-15-preview",
+    azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT")
+)
 
 # ─────────────────────────────────────────
 # HELPERS
@@ -165,8 +172,8 @@ def trigger_power_automate(task_name, changes, priority):
         print(f"  [WARN] Power Automate error: {e}")
 
 
-def get_claude_summary(all_changes: list, new_tasks: list) -> str:
-    """Use Claude AI to generate a smart summary of all detected changes"""
+def get_openai_summary(all_changes: list, new_tasks: list) -> str:
+    """Use Azure OpenAI GPT-4o to generate a smart summary of all detected changes"""
     if not all_changes and not new_tasks:
         return "No changes detected -- everything is up to date!"
 
@@ -175,28 +182,25 @@ def get_claude_summary(all_changes: list, new_tasks: list) -> str:
         "updated_tasks": all_changes
     }, indent=2)
 
-    message = claude_client.messages.create(
-        model="claude-3-5-sonnet-20241022",
-        max_tokens=300,
-        messages=[
-            {
-                "role": "user",
-                "content": f"""You are AmbitionOS, a smart task tracking assistant for Jaymee, 
-a BS Cybersecurity student at Holy Angel University in the Philippines.
-
-Here are the task changes detected in her system:
-{changes_text}
-
-Write a short, friendly summary (3-5 sentences) of:
-1. What changed and why it matters
-2. Any urgent items she should focus on
-3. A motivating closing line
-
-Keep it concise, warm, and actionable. Use emojis sparingly."""
-            }
-        ]
-    )
-    return message.content[0].text
+    try:
+        response = openai_client.chat.completions.create(
+            model=os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-4o"),
+            max_tokens=300,
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are AmbitionOS, a smart task tracking assistant for Jaymee, a BS Cybersecurity student at Holy Angel University in the Philippines. Write a short, friendly summary (3-5 sentences) of: 1. What changed and why it matters 2. Any urgent items she should focus on 3. A motivating closing line. Keep it concise, warm, and actionable. Use emojis sparingly."
+                },
+                {
+                    "role": "user",
+                    "content": f"Here are the task changes detected in her system:\n{changes_text}"
+                }
+            ]
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        print(f"  [WARN] Azure OpenAI error: {e}")
+        return "Summary could not be generated."
 
 
 # ─────────────────────────────────────────
@@ -356,15 +360,15 @@ def run_change_detection():
     cur.close()
     conn.close()
 
-    # ── CLAUDE AI SUMMARY ──
+    # ── GPT-4o AI SUMMARY ──
     print("\n" + "="*50)
-    print("[AI] CLAUDE AI SUMMARY")
+    print("[AI] AZURE OPENAI GPT-4O SUMMARY")
     print("="*50)
     try:
-        summary = get_claude_summary(changes_log, new_tasks_log)
+        summary = get_openai_summary(changes_log, new_tasks_log)
         print(summary)
     except Exception as e:
-        print(f"  [WARN] Claude AI summary skipped: {e}")
+        print(f"  [WARN] Azure OpenAI summary skipped: {e}")
 
     # ── FINAL REPORT ──
     print("\n" + "="*50)

@@ -147,7 +147,7 @@ source .venv/bin/activate  # Mac/Linux
 
 ### 3. Install Dependencies
 ```bash
-pip install flask azure-data-tables azure-storage-blob azure-ai-search-documents azure-ai-textanalytics psycopg2-binary sqlalchemy python-dotenv requests anthropic
+pip install flask azure-data-tables azure-storage-blob azure-ai-search-documents azure-ai-textanalytics psycopg2-binary sqlalchemy python-dotenv requests anthropic openai
 ```
 
 ### 4. Configure Environment Variables
@@ -219,7 +219,7 @@ Open 👉 http://127.0.0.1:5000
 - Implements robust normalization and field mapping
 - Detects: new tasks, updated deadlines, status changes, priority changes
 - Logs every change to PostgreSQL `change_logs` table
-- Generates smart change summaries using **Claude 3.5 Sonnet**
+- Generates smart change summaries using **Azure OpenAI GPT-4o**
 - Triggers Power Automate approval flow on detected changes
 - Syncs updates to Azure AI Search automatically
 
@@ -281,17 +281,17 @@ CREATE TABLE change_logs (
 ## 🛡️ Risk & Safety Evaluation
 | Risk | Mitigation |
 |---|---|
-| PII exposure | Synthetic/masked data only used |
-| API keys exposed | Stored in `.env`, excluded via `.gitignore` |
-| Prompt injection | Input validation on all text fields |
-| Hallucination | Structured CSV used as primary data source |
-| Unauthorized flow trigger | Power Automate URL stored securely in `.env` |
+| PII in extracted tasks | Implemented owner field masking and input sanitization directly within the agent. |
+| Hallucinated due dates | Utilized robust `confidence` field scoring paired with a Human-in-the-Loop approval workflow to catch LLM artifacts. |
+| Prompt injection via email input | Strict input sanitization applied on unverified email strings before passing into LLMs. |
+| API key exposure | Securely handled using `.env` file loading, strictly ignored by `.gitignore`. |
 
 ---
 
 ## 🤝 AI Tools Disclosure
-The following AI tools were used in development:
-- **Claude (Anthropic)** — Development guidance and code assistance
+The following AI tools were used in development natively to support dual models:
+- **Claude 3.5 Sonnet (Anthropic)** — Agentic AI for task data extraction and task parameterization
+- **Azure OpenAI GPT-4o** — AI summaries for automated task change reporting
 - **GitHub Copilot** — Code completion
 
 All AI-generated code has been reviewed and tested by the developer.

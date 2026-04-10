@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AmbitionOS — Welcome</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0b0c10;
+            --card: rgba(31, 40, 51, 0.7);
+            --border: rgba(69, 162, 158, 0.25);
+            --accent: #66fcf1;
+            --accent2: #45a29e;
+            --purple: #b829ea;
+            --text: #c5c6c7;
+            --heading: #ffffff;
+            --high: #ff4757;
+            --medium: #ffa502;
+            --low: #2ed573;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* Animated ambient background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(ellipse at 20% 50%, rgba(104, 58, 183, 0.12) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 20%, rgba(69, 162, 158, 0.1) 0%, transparent 50%),
+                        radial-gradient(ellipse at 60% 80%, rgba(184, 41, 234, 0.08) 0%, transparent 50%);
+            animation: ambientShift 12s ease-in-out infinite alternate;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes ambientShift {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(30px, -20px) rotate(3deg); }
+        }
+
+        .onboarding-container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 700px;
+            padding: 20px;
+        }
+
+        /* AMBY AVATAR + HEADER */
+        .amby-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 40px;
+            animation: slideDown 0.6s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .amby-avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), var(--purple));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            flex-shrink: 0;
+            box-shadow: 0 0 30px rgba(102, 252, 241, 0.3);
+            animation: avatarPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes avatarPulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(102, 252, 241, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(102, 252, 241, 0.6); }
+        }
+
+        .amby-title {
+            font-size: 14px;
+            color: var(--accent);
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .amby-name {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--heading);
+            background: linear-gradient(90deg, var(--accent), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* CHAT BUBBLE */
+        .chat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 40px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            animation: cardPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes cardPop {
+            from { opacity: 0; transform: scale(0.95) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* STEPS */
+        .step { display: none; }
+        .step.active {
+            display: block;
+            animation: fadeSlide 0.4s ease;
+        }
+
+        @keyframes fadeSlide {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .amby-message {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--heading);
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+
+        .amby-sub {
+            font-size: 15px;
+            color: var(--text);
+            opacity: 0.8;
+            margin-bottom: 32px;
+        }
+
+        /* TEXT INPUT */
+        .amby-input {
+            width: 100%;
+            padding: 18px 24px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            color: var(--heading);
+            font-family: 'Outfit', sans-serif;
+            font-size: 18px;
+            outline: none;
+            transition: all 0.3s;
+            margin-bottom: 24px;
+        }
+
+        .amby-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 20px rgba(102, 252, 241, 0.2);
+        }
+
+        .amby-input::placeholder { color: rgba(197, 198, 199, 0.4); }
+
+        /* CHOICE BUTTONS */
+        .choices {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 28px;
+        }
+
+        .choices.two-col { grid-template-columns: 1fr 1fr; }
+        .choices.three-col { grid-template-columns: 1fr 1fr 1fr; }
+
+        .choice-btn {
+            padding: 16px 20px;
+            background: rgba(0,0,0,0.25);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            text-align: left;
+        }
+
+        .choice-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(102, 252, 241, 0.07);
+            transform: translateY(-2px);
+        }
+
+        .choice-btn.selected {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(102, 252, 241, 0.12);
+        }
+
+        .choice-btn .choice-icon {
+            display: block;
+            font-size: 22px;
+            margin-bottom: 6px;
+        }
+
+        /* PRIMARY BUTTON */
+        .btn-primary {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--accent2), var(--accent));
+            border: none;
+            border-radius: 14px;
+            color: #0b0c10;
+            font-family: 'Outfit', sans-serif;
+            font-size: 17px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.3s;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary:hover {
+            filter: brightness(1.1);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 252, 241, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* PROGRESS DOTS */
+        .progress-dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 32px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--border);
+            transition: all 0.3s;
+        }
+
+        .dot.active {
+            background: var(--accent);
+            width: 24px;
+            border-radius: 4px;
+            box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
+        }
+
+        /* LOADING STEP */
+        #step-loading {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .loading-ring {
+            width: 70px;
+            height: 70px;
+            border: 4px solid rgba(102, 252, 241, 0.15);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 28px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .loading-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--heading);
+            margin-bottom: 8px;
+        }
+
+        .loading-sub {
+            font-size: 15px;
+            color: var(--accent);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+<div class="onboarding-container">
+
+    <!-- AMBY HEADER -->
+    <div class="amby-header">
+        <div class="amby-avatar">✨</div>
+        <div>
+            <div class="amby-title">Your AI Assistant</div>
+            <div class="amby-name">Amby</div>
+        </div>
+    </div>
+
+    <!-- CHAT CARD -->
+    <div class="chat-card">
+
+        <!-- PROGRESS DOTS -->
+        <div class="progress-dots" id="progressDots">
+            <div class="dot active" id="dot-0"></div>
+            <div class="dot" id="dot-1"></div>
+            <div class="dot" id="dot-2"></div>
+            <div class="dot" id="dot-3"></div>
+            <div class="dot" id="dot-4"></div>
+        </div>
+
+        <!-- STEP 0: Name -->
+        <div class="step active" id="step-0">
+            <p class="amby-message">Hi! I am Amby, your AI planning assistant.</p>
+            <p class="amby-sub">Before we start, what is your name?</p>
+            <input class="amby-input" type="text" id="inputName" placeholder="Type your name here..." maxlength="60" autofocus>
+            <button class="btn-primary" id="btnStep0" onclick="goStep1()">Let's go!</button>
+        </div>
+
+        <!-- STEP 1: User Type -->
+        <div class="step" id="step-1">
+            <p class="amby-message" id="greetMsg">Nice to meet you!</p>
+            <p class="amby-sub">Tell me a little about yourself.</p>
+            <div class="choices three-col" id="choicesUserType">
+                <button class="choice-btn" onclick="selectUserType('student', this)">
+                    <span class="choice-icon">🎓</span>Student
+                </button>
+                <button class="choice-btn" onclick="selectUserType('professional', this)">
+                    <span class="choice-icon">💼</span>Professional
+                </button>
+                <button class="choice-btn" onclick="selectUserType('career_shifter', this)">
+                    <span class="choice-icon">🚀</span>Career Shifter
+                </button>
+            </div>
+        </div>
+
+        <!-- STEP 2: Field (branching) -->
+        <div class="step" id="step-2">
+            <p class="amby-message" id="step2Msg">Amazing! What field are you in?</p>
+            <p class="amby-sub" id="step2Sub"></p>
+            <div class="choices two-col" id="choicesField"></div>
+        </div>
+
+        <!-- STEP 3: Focus -->
+        <div class="step" id="step-3">
+            <p class="amby-message" id="step3Msg">What are you currently focused on?</p>
+            <p class="amby-sub" id="step3Sub"></p>
+            <div class="choices" id="choicesFocus"></div>
+        </div>
+
+        <!-- STEP 4: Needs -->
+        <div class="step" id="step-4">
+            <p class="amby-message">What do you need help tracking?</p>
+            <p class="amby-sub">Pick everything that applies.</p>
+            <div class="choices two-col" id="choicesNeeds"></div>
+            <button class="btn-primary" id="btnFinish" onclick="finish()" style="margin-top:8px;" disabled>Set up my dashboard!</button>
+        </div>
+
+        <!-- STEP LOADING -->
+        <div class="step" id="step-loading">
+            <div class="loading-ring"></div>
+            <p class="loading-title">Setting up your dashboard...</p>
+            <p class="loading-sub" id="loadingMsg">Talking to Amby...</p>
+        </div>
+
+    </div><!-- /chat-card -->
+</div><!-- /container -->
+
+<script src="/static/js/amby.js"></script>
+</body>
+</html>

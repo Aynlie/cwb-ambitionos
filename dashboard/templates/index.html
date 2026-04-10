@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AmbitionOS Dashboard</title>
+    <title>AmbitionOS — {{ user_name or 'Dashboard' }}</title>
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
@@ -395,19 +395,51 @@
 
     <!-- SIDEBAR NAVIGATION -->
     <div class="sidebar">
-        <div class="logo">🚀 AmbitionOS</div>
+        <div class="logo">AmbitionOS</div>
+        {% if user_name %}
+        <div style="padding: 0 30px 10px; font-size: 13px; color: var(--accent-2); font-weight: 600;">
+            Hi, {{ user_name }}! &nbsp;
+            <a href="/onboarding/reset" style="color: var(--accent-2); opacity: 0.5; font-size: 11px; text-decoration: none;" title="Reset onboarding">reset</a>
+        </div>
+        {% endif %}
         <div style="padding: 0 30px 20px;">
             <button id="syncBtn" class="tab-btn" style="background: var(--accent-1); color: var(--bg-color); border-radius: 8px; text-align: center; padding: 10px;" onclick="syncData()">
-                🔄 Sync Data
+                Sync Data
             </button>
             <div id="syncStatus" style="font-size: 11px; margin-top: 8px; text-align: center; display: none;"></div>
         </div>
-        <ul class="tabs">
-            <li><button class="tab-btn active" onclick="switchTab('dashboard')">🏠 Dashboard</button></li>
-            <li><button class="tab-btn" onclick="switchTab('opportunities')">💼 Opportunities</button></li>
-            <li><button class="tab-btn" onclick="switchTab('school')">🎓 School</button></li>
-            <li><button class="tab-btn" onclick="switchTab('grow')">📈 Grow</button></li>
-            <li><button class="tab-btn" onclick="switchTab('me')">✨ Me</button></li>
+        <ul class="tabs" id="sidebarTabs">
+            {% if tab_config and tab_config.tabs %}
+                {% for tab_name in tab_config.tabs %}
+                    {% set tab_id = tab_name | lower | replace(' ', '_') %}
+                    {% set icons = {
+                        'Overview': '🏠',
+                        'My Tasks': '✅',
+                        'Opportunities': '💼',
+                        'Research': '🔬',
+                        'Coffee Chat': '☕',
+                        'Active Tasks': '✅',
+                        'Change Log': '🔔',
+                        'Gantt': '📊',
+                        'Pending Approval': '⚠️',
+                        'My Goals': '🎯',
+                        'Upskilling': '📈'
+                    } %}
+                    <li>
+                        <button class="tab-btn {% if loop.first %}active{% endif %}"
+                            onclick="switchTab('{{ tab_id }}')">
+                            {{ icons.get(tab_name, '📌') }} {{ tab_name }}
+                        </button>
+                    </li>
+                {% endfor %}
+            {% else %}
+                <!-- Fallback: default tabs -->
+                <li><button class="tab-btn active" onclick="switchTab('overview')">🏠 Dashboard</button></li>
+                <li><button class="tab-btn" onclick="switchTab('opportunities')">💼 Opportunities</button></li>
+                <li><button class="tab-btn" onclick="switchTab('school')">🎓 School</button></li>
+                <li><button class="tab-btn" onclick="switchTab('grow')">📈 Grow</button></li>
+                <li><button class="tab-btn" onclick="switchTab('me')">✨ Me</button></li>
+            {% endif %}
         </ul>
     </div>
 
@@ -477,24 +509,59 @@
                         {% if task.approval_status == 'Pending' %}
                             <span class="badge Pending">Pending Approval</span>
                         {% endif %}
-                        📁 {{ task.category }}
+                        {{ task.category }}
                     </div>
                 </div>
                 {% endfor %}
             </div>
         </div>
 
-        <!-- 2. OPPORTUNITIES PAGE -->
+        <!-- My Tasks / Active Tasks -->
+        <div id="my_tasks" class="tab-page">
+            <div class="section-header">My Tasks</div>
+            <div class="tasks-grid" style="grid-template-columns: repeat(3, 1fr);">
+                {% for task in tasks %}
+                    {% if task.approval_status == 'Approved' %}
+                    <div class="task-item" onclick="openTaskModal({{ task|tojson|forceescape }})">
+                        <div class="name">{{ task.task }}</div>
+                        <div class="meta">
+                            <span class="badge {{ task.priority }}">{{ task.priority }}</span>
+                            {{ task.due_date }} | {{ task.category }}
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        <div id="active_tasks" class="tab-page">
+            <div class="section-header">Active Tasks</div>
+            <div class="tasks-grid" style="grid-template-columns: repeat(3, 1fr);">
+                {% for task in tasks %}
+                    {% if task.status in ['In Progress', 'Not Started'] and task.approval_status == 'Approved' %}
+                    <div class="task-item" onclick="openTaskModal({{ task|tojson|forceescape }})">
+                        <div class="name">{{ task.task }}</div>
+                        <div class="meta">
+                            <span class="badge {{ task.priority }}">{{ task.priority }}</span>
+                            <span class="badge {{ task.status|replace(' ', '-') }}">{{ task.status }}</span>
+                            {{ task.due_date }}
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Opportunities -->
         <div id="opportunities" class="tab-page">
-            <div class="section-header">💼 Opportunities (Internships & Scholarships)</div>
+            <div class="section-header">Opportunities (Internships &amp; Scholarships)</div>
             <div class="tasks-grid" style="grid-template-columns: repeat(3, 1fr);">
                 {% for task in tasks %}
-                    {% if task.category in ['Internship', 'Scholarship', 'Ambassador'] and task.approval_status == 'Approved' %}
+                    {% if task.category in ['Internship', 'Scholarship', 'Ambassador', 'Job Hunt', 'Networking'] and task.approval_status == 'Approved' %}
                     <div class="task-item" onclick="openTaskModal({{ task|tojson|forceescape }})">
                         <div class="name">{{ task.task }}</div>
                         <div class="meta">
                             <span class="badge {{ task.priority }}">{{ task.priority }}</span>
-                            📅 {{ task.due_date }} | 📁 {{ task.category }}
+                            {{ task.due_date }} | {{ task.category }}
                         </div>
                     </div>
                     {% endif %}
@@ -502,17 +569,17 @@
             </div>
         </div>
 
-        <!-- 3. SCHOOL PAGE -->
-        <div id="school" class="tab-page">
-            <div class="section-header">🎓 School & Academics</div>
+        <!-- Research / School -->
+        <div id="research" class="tab-page">
+            <div class="section-header">Research &amp; Academics</div>
             <div class="tasks-grid" style="grid-template-columns: repeat(3, 1fr);">
                 {% for task in tasks %}
-                    {% if task.category in ['Admin', 'Education', 'School'] and task.approval_status == 'Approved' %}
+                    {% if task.category in ['School', 'Admin', 'Education'] and task.approval_status == 'Approved' %}
                     <div class="task-item" onclick="openTaskModal({{ task|tojson|forceescape }})">
                         <div class="name">{{ task.task }}</div>
                         <div class="meta">
                             <span class="badge {{ task.priority }}">{{ task.priority }}</span>
-                            📅 {{ task.due_date }} | 📁 {{ task.category }}
+                            {{ task.due_date }} | {{ task.category }}
                         </div>
                     </div>
                     {% endif %}
@@ -520,9 +587,75 @@
             </div>
         </div>
 
-        <!-- 4. GROW PAGE -->
-        <div id="grow" class="tab-page">
-            <div class="section-header">📈 Grow (Certifications & Learning)</div>
+        <!-- Change Log -->
+        <div id="change_log" class="tab-page">
+            <div class="section-header">Change Log</div>
+            <div class="log-card">
+                <div class="log-list" id="fullChangeLogsList">
+                    <div style="text-align:center; padding:20px; opacity:0.6;">Loading full change history...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gantt (placeholder for Power BI embed) -->
+        <div id="gantt" class="tab-page">
+            <div class="section-header">Gantt Timeline</div>
+            <div class="task-card" style="text-align:center; padding: 60px 40px;">
+                <div style="font-size: 48px; margin-bottom: 20px;">📊</div>
+                <h3 style="color: var(--accent-1); margin-bottom: 12px;">Power BI Gantt</h3>
+                <p style="opacity: 0.7; max-width: 400px; margin: 0 auto; line-height: 1.7;">
+                    The Gantt chart is published in Power BI using the <strong>vw_gantt</strong> SQL view.
+                    It filters Approved, non-completed tasks sorted by priority.
+                </p>
+                <a href="https://app.powerbi.com/groups/me/reports/d36551b2-29f7-42fb-9c8e-bead676b10a2/b91788b4030f6e70bb6b?experience=power-bi"
+                   target="_blank"
+                   style="display:inline-block; margin-top:28px; padding: 14px 32px; background: var(--accent-1); color: #0b0c10; border-radius: 10px; font-weight: 800; text-decoration: none; transition: 0.2s;"
+                   onmouseover="this.style.filter='brightness(1.15)'" onmouseout="this.style.filter='brightness(1)'">
+                    Open in Power BI
+                </a>
+            </div>
+        </div>
+
+        <!-- Pending Approval -->
+        <div id="pending_approval" class="tab-page">
+            <div class="section-header">Pending Approval</div>
+            <div class="tasks-grid" style="grid-template-columns: repeat(3, 1fr);">
+                {% for task in tasks %}
+                    {% if task.approval_status == 'Pending' %}
+                    <div class="task-item" onclick="openTaskModal({{ task|tojson|forceescape }})" style="border-left-color: var(--medium-priority);">
+                        <div class="name">{{ task.task }}</div>
+                        <div class="meta">
+                            <span class="badge Pending">Pending</span>
+                            <span class="badge {{ task.priority }}">{{ task.priority }}</span>
+                            {{ task.due_date }}
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- My Goals -->
+        <div id="my_goals" class="tab-page">
+            <div class="section-header">My Goals</div>
+            <div class="tasks-grid" style="grid-template-columns: repeat(3, 1fr);">
+                {% for task in tasks %}
+                    {% if task.category in ['Personal', 'Learning', 'Certification'] and task.approval_status == 'Approved' %}
+                    <div class="task-item" onclick="openTaskModal({{ task|tojson|forceescape }})">
+                        <div class="name">{{ task.task }}</div>
+                        <div class="meta">
+                            <span class="badge {{ task.priority }}">{{ task.priority }}</span>
+                            {{ task.due_date }} | {{ task.category }}
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Upskilling / Grow -->
+        <div id="upskilling" class="tab-page">
+            <div class="section-header">Upskilling &amp; Certifications</div>
             <div class="tasks-grid" style="grid-template-columns: repeat(3, 1fr);">
                 {% for task in tasks %}
                     {% if task.category in ['Certification', 'Course', 'Learning'] and task.approval_status == 'Approved' %}
@@ -530,7 +663,7 @@
                         <div class="name">{{ task.task }}</div>
                         <div class="meta">
                             <span class="badge {{ task.priority }}">{{ task.priority }}</span>
-                            📅 {{ task.due_date }} | 📁 {{ task.category }}
+                            {{ task.due_date }} | {{ task.category }}
                         </div>
                     </div>
                     {% endif %}
@@ -538,25 +671,61 @@
             </div>
         </div>
 
-        <!-- 5. ME PAGE -->
-        <div id="me" class="tab-page">
-            <div class="section-header">✨ Me (Content & Personal)</div>
+        <!-- Coffee Chat (UI demo — no backend) -->
+        <div id="coffee_chat" class="tab-page">
+            <div class="section-header">Coffee Chat — Find a Collaborator</div>
+            <p style="opacity: 0.7; margin-bottom: 28px; font-size: 15px;">Connect with other students, professionals, and career shifters working on similar goals.</p>
+
+            <!-- Filters -->
+            <div style="display: flex; gap: 12px; margin-bottom: 32px; flex-wrap: wrap;">
+                <select style="padding: 10px 16px; border-radius: 10px; background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-heading); font-family: Outfit; font-size: 14px;">
+                    <option>Filter by Field</option>
+                    <option>Technology</option><option>Business</option>
+                    <option>Healthcare</option><option>Creative Arts</option>
+                </select>
+                <select style="padding: 10px 16px; border-radius: 10px; background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-heading); font-family: Outfit; font-size: 14px;">
+                    <option>Filter by Goal</option>
+                    <option>Portfolio Building</option><option>Certification Prep</option>
+                    <option>Job Hunting</option><option>Networking</option>
+                </select>
+                <select style="padding: 10px 16px; border-radius: 10px; background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-heading); font-family: Outfit; font-size: 14px;">
+                    <option>Availability</option>
+                    <option>Weekends</option><option>Evenings</option><option>Flexible</option>
+                </select>
+            </div>
+
+            <!-- Collaborator Cards -->
             <div class="tasks-grid" style="grid-template-columns: repeat(3, 1fr);">
-                {% for task in tasks %}
-                    {% if task.category in ['Content', 'Personal'] and task.approval_status == 'Approved' %}
-                    <div class="task-item" onclick="openTaskModal({{ task|tojson|forceescape }})">
-                        <div class="name">{{ task.task }}</div>
-                        <div class="meta">
-                            <span class="badge {{ task.priority }}">{{ task.priority }}</span>
-                            📅 {{ task.due_date }} | 📁 {{ task.category }}
+                {% set collaborators = [
+                    {'name': 'Alex Reyes', 'field': 'Technology', 'goal': 'Building a cybersecurity portfolio', 'avail': 'Weekends', 'badge': 'CS Student'},
+                    {'name': 'Maria Santos', 'field': 'Business', 'goal': 'Applying for MBA scholarships', 'avail': 'Evenings', 'badge': 'Career Shifter'},
+                    {'name': 'James Tan', 'field': 'Technology', 'goal': 'AZ-900 certification prep', 'avail': 'Flexible', 'badge': 'Developer'},
+                    {'name': 'Linh Nguyen', 'field': 'Creative Arts', 'goal': 'Growing a design portfolio', 'avail': 'Weekends', 'badge': 'Freelancer'},
+                    {'name': 'Carlo Bautista', 'field': 'Healthcare', 'goal': 'Research grant applications', 'avail': 'Evenings', 'badge': 'Med Student'},
+                    {'name': 'Priya Mehta', 'field': 'Technology', 'goal': 'Transitioning into data science', 'avail': 'Flexible', 'badge': 'Career Shifter'}
+                ] %}
+                {% for person in collaborators %}
+                <div class="task-card" style="padding: 24px;">
+                    <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 16px;">
+                        <div style="width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-2), #b829ea); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; color: white; flex-shrink:0;">
+                            {{ person.name[0] }}
+                        </div>
+                        <div>
+                            <div style="font-weight: 700; color: var(--text-heading); font-size: 16px;">{{ person.name }}</div>
+                            <div style="font-size: 12px; color: var(--accent-2);">{{ person.badge }} &middot; {{ person.field }}</div>
                         </div>
                     </div>
-                    {% endif %}
+                    <p style="font-size: 14px; opacity: 0.8; margin-bottom: 14px; line-height: 1.5;">{{ person.goal }}</p>
+                    <div style="font-size: 12px; color: var(--accent-2); margin-bottom: 18px;">Available: {{ person.avail }}</div>
+                    <button onclick="coffeeAlert('{{ person.name }}')" style="width:100%; padding: 10px; background: rgba(102,252,241,0.08); border: 1px solid var(--border-color); border-radius: 8px; color: var(--accent-1); font-family: Outfit; font-weight: 700; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='rgba(102,252,241,0.18)'" onmouseout="this.style.background='rgba(102,252,241,0.08)'">
+                        Send Coffee Chat Request
+                    </button>
+                </div>
                 {% endfor %}
             </div>
         </div>
 
-    </div>
+    </div><!-- /main-content -->
 
     <!-- TASK MODAL -->
     <div id="taskModalOverlay" class="modal-overlay" onclick="closeTaskModal(event)">
@@ -589,17 +758,29 @@
     <script>
         // 1. Tab Switching Logic
         function switchTab(tabId) {
-            // Hide all pages
             document.querySelectorAll('.tab-page').forEach(page => {
                 page.classList.remove('active');
             });
-            // Deactivate all buttons
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-            // Activate selected
-            document.getElementById(tabId).classList.add('active');
-            event.target.classList.add('active');
+            const target = document.getElementById(tabId);
+            if (target) {
+                target.classList.add('active');
+            } else {
+                // Fallback: show overview
+                const fallback = document.getElementById('overview');
+                if (fallback) fallback.classList.add('active');
+            }
+            if (event && event.target) event.target.classList.add('active');
+
+            // Lazy-load full change log when Change Log tab opens
+            if (tabId === 'change_log') { fetchFullChanges(); }
+        }
+
+        // Coffee Chat demo alert
+        function coffeeAlert(name) {
+            alert(`Coffee Chat request sent to ${name}! (UI demo — no backend)`);
         }
 
         // 2. Trigger Sync
@@ -668,6 +849,34 @@
         
         // Load changes on startup
         fetchChanges();
+
+        // Fetch full change log for the dedicated Change Log tab
+        async function fetchFullChanges() {
+            const list = document.getElementById('fullChangeLogsList');
+            if (!list) return;
+            try {
+                const res = await fetch('/changes');
+                const changes = await res.json();
+                if (changes.length === 0) {
+                    list.innerHTML = '<div style="text-align:center; padding:20px; opacity:0.6;">No changes recorded yet.</div>';
+                    return;
+                }
+                list.innerHTML = changes.map(c => `
+                    <div class="log-item">
+                        <div class="log-date">${c.changed_at}</div>
+                        <div class="log-task">${c.task_name}</div>
+                        <div class="log-change">
+                            ${c.field_changed === 'new_task' ?
+                                'Created new task' :
+                                `Changed <b>${c.field_changed}</b> from <strike>${c.old_value}</strike> to <b>${c.new_value}</b>`
+                            }
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                list.innerHTML = '<div style="color:var(--high-priority);">Error loading change log.</div>';
+            }
+        }
 
         // 3. Azure AI Search Logic
         const searchInput = document.getElementById('searchInput');

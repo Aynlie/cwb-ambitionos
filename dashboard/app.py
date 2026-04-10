@@ -1,7 +1,7 @@
 import os
 import sys
 import psycopg2
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, redirect, url_for
 from dotenv import load_dotenv
 
 # Ensure the root directory is in the path for 'agents' import
@@ -13,6 +13,16 @@ from azure.search.documents import SearchClient
 load_dotenv()
 
 app = Flask(__name__)
+
+# ── Import user profiles module ──
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from database.user_profiles import save_profile, get_profile, setup_user_profiles_table
+
+# Ensure the table exists on startup (safe — uses IF NOT EXISTS)
+try:
+    setup_user_profiles_table()
+except Exception as _e:
+    print(f"[WARN] Could not verify user_profiles table: {_e}")
 
 # PostgreSQL Connection
 def get_pg_connection():
@@ -57,18 +67,75 @@ def get_all_tasks():
 
 @app.route("/")
 def dashboard():
+    # ── Onboarding guard ──
+    profile = get_profile()
+    if profile is None:
+        return redirect(url_for('onboarding'))
+
     all_tasks = get_all_tasks()
-    # Filter out Rejected tasks from the dashboard entirely
     dashboard_tasks = [t for t in all_tasks if t["approval_status"] != "Rejected"]
-    
-    # High Priority and In Progress (Approved only for specific tabs, but Dashboard shows all non-rejected)
     high = [t for t in dashboard_tasks if t["priority"] == "High" and t["approval_status"] == "Approved"]
     in_progress = [t for t in dashboard_tasks if t["status"] == "In Progress" and t["approval_status"] == "Approved"]
-    
-    return render_template("index.html", 
+
+    tab_config = profile.get("tab_config", {})
+    user_name = profile.get("name", "")
+
+    return render_template("index.html",
                          tasks=dashboard_tasks,
                          high_priority=high,
-                         in_progress=in_progress)
+                         in_progress=in_progress,
+                         tab_config=tab_config,
+                         user_name=user_name)
+
+
+@app.route("/onboarding")
+def onboarding():
+    """Show Amby welcome screen. Skip if user already onboarded."""
+    profile = get_profile()
+    if profile is not None:
+        return redirect(url_for('dashboard'))
+    return render_template("onboarding.html")
+
+
+@app.route("/api/onboarding/complete", methods=["POST"])
+def onboarding_complete():
+    """Save profile + return tab_config"""
+    data = request.json
+    if not data or not data.get("name"):
+        return jsonify({"error": "Name is required"}), 400
+    try:
+        tab_config = save_profile(data)
+        return jsonify({"status": "success", "tab_config": tab_config})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/profile")
+def api_profile():
+    """Return current user profile and tab_config"""
+    profile = get_profile()
+    if profile is None:
+        return jsonify({"onboarded": False}), 404
+    return jsonify(profile)
+
+
+@app.route("/onboarding/reset")
+def onboarding_reset():
+    """Dev-only: clear profile to re-trigger onboarding"""
+    try:
+        conn = psycopg2.connect(
+            host=os.getenv("POSTGRES_HOST"), database=os.getenv("POSTGRES_DB"),
+            user=os.getenv("POSTGRES_USER"), password=os.getenv("POSTGRES_PASSWORD"),
+            port=os.getenv("POSTGRES_PORT", 5432), sslmode="require"
+        )
+        cur = conn.cursor()
+        cur.execute("DELETE FROM user_profiles;")
+        conn.commit()
+        cur.close()
+        conn.close()
+        return redirect(url_for('onboarding'))
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/api/tasks")
 def api_tasks():

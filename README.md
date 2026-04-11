@@ -340,4 +340,4 @@ The **SecondBrain** concept inspired the AmbitionOS personal dashboard idea. All
 
 ---
 
-*Built with 💜 for Microsoft Code Without Barriers Hackathon 2026*
+*  💜 Built by Jaymee Santos *

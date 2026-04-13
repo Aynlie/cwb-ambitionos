@@ -261,6 +261,9 @@ Send approval email          Send rejection email
 - **Search bar** — Powered by Azure AI Search with keyword and priority filtering
 - **Coffee Chat** — A unique collaborator discovery vision for student and shifter networking
 
+## 📊 Power BI Dashboard
+[View Live Dashboard](https://app.powerbi.com/groups/me/reports/d36551b2-29f7-42fb-9c8e-bead676b10a2/b91788b4030f6e70bb6b?experience=power-bi)
+
 ---
 
 ## 🗄️ PostgreSQL Schema

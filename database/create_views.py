@@ -72,7 +72,11 @@ def create_views():
             approval_status,
             source
         FROM tasks
-        WHERE source IN ('Email', 'Syllabus', 'Meeting Notes')
+        WHERE source IN (
+          'Email', 'Syllabus', 'Meeting Notes',
+          'email_threads.txt', 'meeting_notes.txt',
+          'task_tracker_baseline.csv', 'csv_baseline'
+        )
         ORDER BY approval_status DESC, priority;
         """
 

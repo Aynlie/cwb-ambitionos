@@ -413,17 +413,17 @@
                 {% for tab_name in tab_config.tabs %}
                     {% set tab_id = tab_name | lower | replace(' ', '_') %}
                     {% set icons = {
-                        'Overview': '🏠',
-                        'My Tasks': '✅',
-                        'Opportunities': '💼',
-                        'Research': '🔬',
-                        'Coffee Chat': '☕',
-                        'Active Tasks': '✅',
-                        'Change Log': '🔔',
-                        'Gantt': '📊',
-                        'Pending Approval': '⚠️',
-                        'My Goals': '🎯',
-                        'Upskilling': '📈'
+                        'Overview': '',
+                        'My Tasks': '',
+                        'Opportunities': '',
+                        'Research': '',
+                        'Coffee Chat': '',
+                        'Active Tasks': '',
+                        'Change Log': '',
+                        'Gantt': '',
+                        'Pending Approval': '',
+                        'My Goals': '',
+                        'Upskilling': ''
                     } %}
                     <li>
                         <button class="tab-btn {% if loop.first %}active{% endif %}"
@@ -434,11 +434,11 @@
                 {% endfor %}
             {% else %}
                 <!-- Fallback: default tabs -->
-                <li><button class="tab-btn active" onclick="switchTab('overview')">🏠 Dashboard</button></li>
-                <li><button class="tab-btn" onclick="switchTab('opportunities')">💼 Opportunities</button></li>
-                <li><button class="tab-btn" onclick="switchTab('school')">🎓 School</button></li>
-                <li><button class="tab-btn" onclick="switchTab('grow')">📈 Grow</button></li>
-                <li><button class="tab-btn" onclick="switchTab('me')">✨ Me</button></li>
+                <li><button class="tab-btn active" onclick="switchTab('overview')">Dashboard</button></li>
+                <li><button class="tab-btn" onclick="switchTab('opportunities')">Opportunities</button></li>
+                <li><button class="tab-btn" onclick="switchTab('school')">School</button></li>
+                <li><button class="tab-btn" onclick="switchTab('grow')">Grow</button></li>
+                <li><button class="tab-btn" onclick="switchTab('me')">Me</button></li>
             {% endif %}
         </ul>
     </div>
